@@ -1,0 +1,32 @@
+README
+
+GIT-REPAIR_CLI 0.1 (May 17 2012) 
+
+Discription:
+  This command for git-repair,
+  or 
+  Command for  join later developer in the project. 
+  This is useful when there is a lot of Branch. 
+
+  Auto below.
+	* git-clone
+	* You can easily automate create & pull for multiple branch.
+	* Add on commit-id in commit-msg.
+	* Obejct Check.
+
+Install
+
+  Linux:
+	git clone git@github.com:ktykogm/gerrit-git-repair.git
+	cd gerrit-git-repair.git
+	bash ./setup.sh
+	git-repair_cli -h
+
+  Cygwin:
+	git clone git@github.com:ktykogm/gerrit-git-repair.git
+	cd gerrit-git-repair.git
+	tr -d \\r <setup.sh >setup2.sh
+	bash ./setup2.sh
+	git-repair_cli -h
+
+
