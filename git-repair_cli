@@ -1,0 +1,137 @@
+#!/bin/sh
+# Gerrit Repo Repair.
+# Client Repair version.
+# ex:) ${GIT_WORKTREE}/git-repair_cli user@gerrit.example.com/repo [--port] [-b|--branch] [-h|--help]
+
+# Variables.
+# Please don't write the below.
+port=29418
+logfile=/var/log/gerrit/git-repair_cli.log
+
+usage(){
+  echo "ex:) ${GIT_WORKTREE}/git-repair_cli user@gerrit.example.com/repo [-p|port] [-b|branch] [-h|help]"
+  echo "Help:$ git-repait_cli.sh -h"
+  exit 1
+}
+
+if [ ! -e /var/log/gerrit ];then
+  mkdir /var/log/gerrit
+elif [ ! -d /var/log/gerrit ];then
+  logfile=/var/log/git-repair_cli.log
+fi
+
+fake_split(){
+  sed -e s%$1%\ %g
+}
+
+help(){
+  echo -e "GIT-REPAIR_CLI 0.1 (May 17 2012) \n\n\
+  Discription:\n\
+  This command for git-repair,\n\
+  or \n\
+  Command for  join later developer in the project. \n\
+  This is useful when there is a lot of Branch. \n\n\
+   
+  usage: git-reapir_cli [user@server/repo] [arguments] \n\n\
+  Argments:
+  -p		Setting at port. Default 29418, is Gerrit default. \n\
+  -b		Branche list. Multiple comma-delimited. \n\
+  -h		Help print. \n\n\
+  Example:	cd ${GIT_WORKTREE} \n\
+  		git-repair_cli user@gerrit.example.com/repo.git -b branch1,branch2" 
+  exit 0
+}
+
+chk_usrsrv=$1
+
+if ! expr "$chk_usrsrv" : "-." ;then
+  if [ ! -n "$chk_usrsrv" ];then
+    echo "$msg_usrsrv"
+    usage
+  elif [ `echo $chk_usrsrv |grep "\@"|wc -w` -eq 1 ];then
+    shift 1
+  else
+    echo "$msg_usrsrv"
+    usage
+  fi
+fi
+
+while getopts "b:p::h" opt
+do
+  case $opt in
+    "b")
+      branch=$(echo $OPTARG|fake_split ,)
+      ;;
+    "p")
+      port=$OPTARG
+      ;;
+    "h")
+      help
+      ;;
+    "\?")
+      usage
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+msg_usrsrv="[err] Do you have to specify the User@example.com?"
+usrsrv_repo=`echo $chk_usrsrv|fake_split /`
+USRSRV_REPO=($usrsrv_repo)
+ERRCOUNT=0
+
+echo -e "\n======GIT-CLONE========="
+git clone ssh://${USRSRV_REPO[0]}:$port/${USRSRV_REPO[1]} ${USRSRV_REPO[1]} 
+retval=$?
+
+start_set(){
+  cd ${USRSRV_REPO[1]}
+  echo -e "\n======ADD:COMMIT_MSG========="
+  curl https://${USRSRV_REPO[0]}/tools/hooks/commit-msg -k > .git/hooks/commit-msg
+  chmod +x .git/hooks/commit-msg
+  for i in $branch
+  do
+  echo -e "\n======BRANCH_PULL: $i========="
+    git checkout -b $i
+    git pull origin $i
+    [ 0 -eq $? ]|| ERRCOUNT=`expr $ERRCOUNT + 1`
+  done
+
+  if [ 0 -eq $ERRCOUNT ];then
+    echo -e "Create Branches. \n\n=======Remote Branches========= "
+    git branch -r 
+    echo -e "\n======Local Branches========="
+    git branch
+  else
+    echo -e "\n========ERROR==========\n\
+    [ERROR]Oops!! Not create Branches. \n\
+    Branch that you specify does not exist?"
+    logger -is -t git_fail "[err] branch hasn't create!" >> $logfile
+    logger -is -t git_fail "create of branch failed."
+    exit 1
+  fi
+}
+
+set_err(){
+  echo -e "\n========ERROR==========\n\
+  [ERROR]Don't create clone." 
+  logger -is -t git_fail "[err] git clone hasn't create!" >> $logfile
+  logger -is -t git_fail "create of git-clone failed."
+  exit 1
+}
+
+case $retval in
+  0)
+    start_set
+    ;;
+  128)
+    set_err
+    ;;
+esac
+
+echo -e "\n======FINAL-CHECK======="
+git count-objects -v
+[ $? ] && echo -e "\n\n All Successful!!"
+# git fsck  
+
