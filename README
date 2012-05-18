@@ -16,17 +16,8 @@ Discription:
 
 Install
 
-  Linux:
-	git clone git@github.com:ktykogm/gerrit-git-repair.git
+  Unix/Linux & Cygwin:
+	git clone https://github.com/ktykogm/gerrit-git-repair.git
 	cd gerrit-git-repair.git
 	bash ./setup.sh
 	git-repair_cli -h
-
-  Cygwin:
-	git clone git@github.com:ktykogm/gerrit-git-repair.git
-	cd gerrit-git-repair.git
-	tr -d \\r <setup.sh >setup2.sh
-	bash ./setup2.sh
-	git-repair_cli -h
-
-
