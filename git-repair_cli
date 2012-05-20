@@ -93,8 +93,7 @@ start_set(){
   for i in $branch
   do
   echo -e "\n======BRANCH_PULL: $i========="
-    git checkout -b $i
-    git pull origin $i
+    git checkout -b $i remotes/origin/$i
     [ 0 -eq $? ]|| ERRCOUNT=`expr $ERRCOUNT + 1`
   done
 
