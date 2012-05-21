@@ -19,5 +19,5 @@ Install
   Unix/Linux & Cygwin:
 	git clone https://github.com/ktykogm/gerrit-git-repair.git
 	cd gerrit-git-repair.git
-	bash ./setup.sh
+	sudo bash ./setup.sh
 	git-repair_cli -h
