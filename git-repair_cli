@@ -16,7 +16,7 @@ usage(){
 
 if [ ! -e /var/log/gerrit ];then
   mkdir /var/log/gerrit
-  chown $USER:USER /var/log/gerrit
+  chown $USER:$USER /var/log/gerrit
 elif [ ! -d /var/log/gerrit ];then
   logfile=/var/log/git-repair_cli.log
 fi
